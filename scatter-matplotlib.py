@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import time
 
 class AnimatedScatter(object):
     """An animated scatter plot using matplotlib.animations.FuncAnimation."""
@@ -28,12 +29,48 @@ class AnimatedScatter(object):
     def data_stream(self):
         """Generate a random walk (brownian motion). Data is scaled to produce
         a soft "flickering" effect."""
+        red = 0.9
+        blue = 0.1
+        
         xy = (np.random.random((self.numpoints, 2))-0.5)*10
-        s, c = np.random.random((self.numpoints, 2)).T
+        s = np.ones(self.numpoints)*0.1
+        c = np.ones(self.numpoints)*0.1
+        age = np.zeros(self.numpoints)
+        day = 0
+        c[0] = red
+        sick = 0
+        immune = 0
+        #s, c = np.random.random((self.numpoints, 2)).T
         while True:
-            xy += 0.03 * (np.random.random((self.numpoints, 2)) - 0.5)
-            s += 0.05 * (np.random.random(self.numpoints) - 0.5)
-            c += 0.02 * (np.random.random(self.numpoints) - 0.5)
+            print(sick,immune)
+            time.sleep(0.1)
+            day += 1
+            xy += 0.5 * (np.random.random((self.numpoints, 2)) - 0.5)
+            for i in range(self.numpoints):
+                one = xy[i]
+                if(c[i] == red):
+                    age[i] += 1
+                    if(age[i]>100):
+                        c[i] = blue
+                        immune += 1
+                        sick -= 1
+                        #age[i] = 0
+                for j in range(self.numpoints):
+                    other=xy[j]
+                    if i == j: 
+                        continue
+                    if((one[0]-other[0])**2 + (one[1]-other[1])**2 < 0.6):
+                        if(c[i] == red and age[j]==0): 
+                            c[j]=red
+                            sick += 1
+                        if(c[j] == red and age[i]==0): 
+                            c[i]=red
+                            sick += 1
+                        #print(c[i],c[j])
+                        #print(one,other)
+                        #print("---")
+            #s += 0.00 * (np.random.random(self.numpoints) - 0.5)
+            #c += 0.00 * (np.random.random(self.numpoints) - 0.5)
             yield np.c_[xy[:,0], xy[:,1], s, c]
 
     def update(self, i):
